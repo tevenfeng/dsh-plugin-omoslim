@@ -189,7 +189,7 @@
         backgroundMode: continuable
         agentOptions:
           provider: opencode-go
-          model: deepseek-v4-flash
+          model: @@models.explorer@@
         persona: >-
           You are Explorer — a fast codebase navigation specialist (read-only).
 
@@ -214,7 +214,7 @@
         backgroundMode: continuable
         agentOptions:
           provider: opencode-go
-          model: glm-5.2
+          model: @@models.oracle@@
         persona: >-
           You are Oracle — a strategic technical advisor and code reviewer.
 
@@ -242,7 +242,7 @@
         backgroundMode: continuable
         agentOptions:
           provider: opencode-go
-          model: minimax-m2.7
+          model: @@models.librarian@@
         persona: >-
           You are Librarian — a research specialist for codebases and
           documentation.
@@ -267,7 +267,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: kimi-k2.6
+          model: @@models.designer@@
         persona: >-
           You are Designer — a frontend UI/UX specialist who creates and
           reviews intentional, polished experiences.
@@ -299,7 +299,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: deepseek-v4-flash
+          model: @@models.fixer@@
         persona: >-
           You are Fixer — a fast, focused implementation specialist.
 
@@ -332,7 +332,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: glm-5.2
+          model: @@models.councillor_alpha@@
         persona: >-
           You are Councillor alpha (seat name: alpha), a member of a review
           council dispatched by the Orchestrator. Give your independent,
@@ -350,7 +350,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: kimi-k2.7-code
+          model: @@models.councillor_beta@@
         persona: >-
           You are Councillor beta (seat name: beta), a member of a review
           council dispatched by the Orchestrator. Give your independent,
@@ -368,7 +368,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: qwen3.7-max
+          model: @@models.councillor_gamma@@
         persona: >-
           You are Councillor gamma (seat name: gamma), a member of a review
           council dispatched by the Orchestrator. Give your independent,
@@ -387,7 +387,7 @@
         backgroundMode: one-shot
         agentOptions:
           provider: opencode-go
-          model: kimi-k3
+          model: @@models.council@@
         persona: >-
           You are the Council agent — a synthesizer for multi-model consensus.
 

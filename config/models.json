@@ -1,0 +1,11 @@
+{
+  "explorer": "deepseek-v4-flash",
+  "oracle": "glm-5.2",
+  "librarian": "minimax-m2.7",
+  "designer": "kimi-k2.6",
+  "fixer": "deepseek-v4-flash",
+  "councillor_alpha": "glm-5.2",
+  "councillor_beta": "kimi-k2.7-code",
+  "councillor_gamma": "qwen3.7-max",
+  "council": "kimi-k3"
+}

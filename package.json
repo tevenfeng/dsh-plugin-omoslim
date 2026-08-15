@@ -10,6 +10,7 @@
   "files": [
     "lib/index.js",
     "cordis.patch.yml",
+    "config/models.json",
     "config/presets/**"
   ],
   "dsh": {
