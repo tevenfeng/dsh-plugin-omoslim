@@ -34,14 +34,36 @@ One agent preset, `orchestrator`:
 
 A dsh **bundle** is an npm package declaring
 `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`. This bundle's patch
-layer inserts one row: the preset-installer plugin. On boot the plugin copies
-`config/presets/*` into the harness-home **user preset root**
+layer inserts one row: the preset-installer plugin. On boot the plugin
+installs/updates `config/presets/*` in the harness-home **user preset root**
 (`~/.dsh/.agent-presets`), which the agent-presets roster always scans.
 
 Why install into the user root instead of registering a new root? The dsh
 launcher's `composeProfile` forcibly overwrites `agent-presets.config.roots`
 with the shipped root, so a bundle cannot contribute its own root. The user
 root is the supported extension path.
+
+### Model definitions are separated from the composition
+
+Each subagent's **model** and **persona** live in different files on purpose —
+you are far more likely to tweak a model than a persona, and plugin updates
+should not clobber your model choices:
+
+| File (in the bundle) | File (in `~/.dsh/.agent-presets/orchestrator/`) | What you edit |
+|---|---|---|
+| `config/models.json` | `models.json` | model mapping (copied on install; user-owned afterwards) |
+| `config/presets/orchestrator/agent.cordis.yml.tmpl` | `agent.cordis.yml` (rendered) | personas / tool wiring (generated from template) |
+| — | `.generated` | render stamp `{ renderedHash }` (managed) |
+
+Every boot the plugin re-renders `agent.cordis.yml` from the current template
++ the current `models.json`. Rules:
+
+- **Model change** → edit `models.json`, restart `dsh`. Re-render happens.
+- **Plugin update (new personas/wiring)** → re-render happens on next boot;
+  your `models.json` is never overwritten.
+- **Hand-editing the composition** → if you edit `agent.cordis.yml` directly,
+  the plugin detects it (hash differs from the stamp) and leaves your file
+  alone. You own it then; delete the preset directory to take plugin updates.
 
 ## Install
 
@@ -84,24 +106,23 @@ agent will plan and dispatch; the subagent tools appear in its tool catalog.
 
 ## Customizing
 
-Edit `~/.dsh/.agent-presets/orchestrator/agent.cordis.yml` — the plugin never
-overwrites an existing preset (idempotent install), so your edits survive
-plugin updates. To reinstall the plugin's pristine version, delete the preset
-directory first.
+- **Change a subagent's model** → edit
+  `~/.dsh/.agent-presets/orchestrator/models.json`, restart `dsh` (or the
+  `dsh-web` service). The plugin re-renders `agent.cordis.yml` on the next
+  boot and your model mapping is never overwritten by plugin updates.
 
-To change a subagent's model, edit its `agentOptions` in that file, e.g.:
+  ```json
+  { "oracle": "glm-5.2", "explorer": "deepseek-v4-flash", "...": "..." }
+  ```
 
-```yaml
-- id: tool-subagent-oracle
-  name: '@deepseek-ai/dsh-tool-subagent'
-  config:
-    provider: spawn
-    toolName: subagent_oracle
-    backgroundMode: continuable
-    agentOptions:
-      provider: opencode-go
-      model: glm-5.2
-```
+- **Change personas / tool wiring** → edit the template in the bundle
+  (`config/presets/orchestrator/agent.cordis.yml.tmpl`) and bump the plugin,
+  or hand-edit the rendered `~/.dsh/.agent-presets/orchestrator/agent.cordis.yml`
+  — hand edits are detected (stamp mismatch) and left alone. To take plugin
+  updates again, delete the preset directory first.
+
+- **Reinstall the pristine preset** → `rm -rf ~/.dsh/.agent-presets/orchestrator`
+  and restart `dsh`.
 
 ## Layout
 
@@ -109,9 +130,10 @@ To change a subagent's model, edit its `agentOptions` in that file, e.g.:
 dsh-plugin-omoslim/
 ├── package.json            # dsh.bundle.patch declaration
 ├── cordis.patch.yml        # bundle patch layer (inserts the installer row)
-├── lib/index.js            # Cordis plugin: idempotent preset installer
-└── config/presets/
-    └── orchestrator/
-        ├── preset.yml
-        └── agent.cordis.yml   # the composition (persona + 11 subagent tools)
+├── config/
+│   ├── models.json         # DEFAULT model mapping (independent file)
+│   └── presets/orchestrator/
+│       ├── preset.yml
+│       └── agent.cordis.yml.tmpl   # composition template (@@models.<key>@@ slots)
+└── lib/index.js            # Cordis plugin: idempotent installer + template renderer
 ```
