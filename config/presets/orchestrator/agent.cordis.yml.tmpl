@@ -2,15 +2,28 @@
 # (preset "opencode", oh-my-opencode-slim v2.2.8) on the dsh harness.
 #
 # Main agent = Orchestrator (planner/dispatcher). Specialists are exposed as
-# named subagent tools, each pinned to the same model the OMO config routes:
-#   explorer   -> opencode-go/deepseek-v4-flash   (fast codebase navigation)
-#   oracle     -> opencode-go/glm-5.2             (architecture / review)
-#   librarian  -> opencode-go/minimax-m2.7        (docs / research)
-#   designer   -> opencode-go/kimi-k2.6           (UI/UX)
-#   fixer      -> opencode-go/deepseek-v4-flash   (implementation)
+# named subagent tools, each pinned to a model slot in models.json. Defaults
+# mirror the OMO opencode preset (all values are examples from the OMO
+# author's environment — edit ~/.dsh/.agent-presets/orchestrator/models.json
+# to suit your deployment):
+#   explorer         -> deepseek-v4-flash   (fast codebase navigation)
+#   oracle           -> glm-5.2             (architecture / review)
+#   librarian        -> minimax-m2.7        (docs / research)
+#   designer         -> kimi-k2.6           (UI/UX)
+#   fixer            -> deepseek-v4-flash   (implementation)
+#   councillor_alpha -> glm-5.2             (independent review seat)
+#   councillor_beta  -> kimi-k2.7-code      (independent review seat)
+#   councillor_gamma -> qwen3.7-max         (independent review seat)
+#   council          -> kimi-k3             (consensus synthesis; OMO uses
+#                                             gpt-5.6-luna, not in the
+#                                             opencode-go catalog)
 #
-# Edit this file, then pick this preset for new sessions in Settings → General
-# (or set `agent-presets.default: orchestrator` in ~/.dsh/settings.yaml).
+# provider defaults to null = inherit the main agent's provider; set it in
+# models.json to pin one (e.g. "opencode-go").
+#
+# Edit models.json for model/provider changes, then pick this preset for new
+# sessions in Settings → General (or set `agent-presets.default: orchestrator`
+# in ~/.dsh/settings.yaml).
 
 # ── identity ────────────────────────────────────────────────────────────────
 
@@ -28,16 +41,24 @@
       孤立、清晰、低风险且分派开销大于自己动手时才亲自处理。
 
       ## 子 agent 路由表（调用具名工具，可后台并行 run_in_background）
-      - subagent_explorer（deepseek-v4-flash）：快速代码导航。"X 在哪？""哪个文件有 Y？"
+      - subagent_explorer（@@models.explorer@@）：快速代码导航。"X 在哪？""哪个文件有 Y？"
         用 grep/glob/搜索定位，只读，带文件路径和行号返回。查代码分布、找模式用它。
-      - subagent_oracle（glm-5.2）：战略技术顾问。高难度调试、架构决策、代码评审、
+      - subagent_oracle（@@models.oracle@@）：战略技术顾问。高难度调试、架构决策、代码评审、
         简化建议（YAGNI）。只读，给方案和权衡，不实现。
-      - subagent_librarian（minimax-m2.7）：调研专员。外部仓库分析、官方文档、
+      - subagent_librarian（@@models.librarian@@）：调研专员。外部仓库分析、官方文档、
         GitHub 示例、库的最佳实践。用 web 搜索取证，标注来源。
-      - subagent_designer（kimi-k2.6）：前端 UI/UX 专家。排版、色彩、动效、布局、
+      - subagent_designer（@@models.designer@@）：前端 UI/UX 专家。排版、色彩、动效、布局、
         有意图的视觉体验设计与评审。
-      - subagent_fixer（deepseek-v4-flash）：实现专员。拿到明确任务规格后实现、
+      - subagent_fixer（@@models.fixer@@）：实现专员。拿到明确任务规格后实现、
         运行分配的验证、报告变更与验证证据。不做研究、不做设计。
+      - subagent_councillor_alpha（@@models.councillor_alpha@@）：评审委员 alpha 席位。
+        对当前任务给出独立、直接的技术评审（风险、取舍、明确建议），不与其他席位协调。
+      - subagent_councillor_beta（@@models.councillor_beta@@）：评审委员 beta 席位。
+        独立评审，职责同 alpha。
+      - subagent_councillor_gamma（@@models.councillor_gamma@@）：评审委员 gamma 席位。
+        独立评审，职责同 alpha。
+      - subagent_council（@@models.council@@）：评审会综合员。基于原始需求与各席位
+        独立意见，综合出结构化评审报告；不亲自分派委员、不调用工具。
       - subagent（通用，后台续谈）：不属于以上任何角色的有界任务；后台启动后保留
         id，结算通知到达后按 id 读 transcript。
       - subagent_fork（继承本对话上下文）：需要利用你已知信息继续的任务。
@@ -188,7 +209,7 @@
         toolName: subagent_explorer
         backgroundMode: continuable
         agentOptions:
-          provider: opencode-go
+          provider: @@models.explorer.provider@@
           model: @@models.explorer@@
         persona: >-
           You are Explorer — a fast codebase navigation specialist (read-only).
@@ -213,7 +234,7 @@
         toolName: subagent_oracle
         backgroundMode: continuable
         agentOptions:
-          provider: opencode-go
+          provider: @@models.oracle.provider@@
           model: @@models.oracle@@
         persona: >-
           You are Oracle — a strategic technical advisor and code reviewer.
@@ -241,7 +262,7 @@
         toolName: subagent_librarian
         backgroundMode: continuable
         agentOptions:
-          provider: opencode-go
+          provider: @@models.librarian.provider@@
           model: @@models.librarian@@
         persona: >-
           You are Librarian — a research specialist for codebases and
@@ -266,7 +287,7 @@
         toolName: subagent_designer
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.designer.provider@@
           model: @@models.designer@@
         persona: >-
           You are Designer — a frontend UI/UX specialist who creates and
@@ -298,7 +319,7 @@
         toolName: subagent_fixer
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.fixer.provider@@
           model: @@models.fixer@@
         persona: >-
           You are Fixer — a fast, focused implementation specialist.
@@ -324,6 +345,7 @@
     # ── Council (multi-model consensus, mirrors OMO council presets) ──────
 
     # Councillor seats — each a different model giving an independent opinion.
+    # Councillor alpha — independent review seat (OMO: glm-5.2)
     - id: tool-subagent-councillor-alpha
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -331,7 +353,7 @@
         toolName: subagent_councillor_alpha
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.councillor_alpha.provider@@
           model: @@models.councillor_alpha@@
         persona: >-
           You are Councillor alpha (seat name: alpha), a member of a review
@@ -342,6 +364,7 @@
           seat answers independently. Output: your answer plus a confidence
           level (high/medium/low) and any assumptions you made.
 
+    # Councillor beta — independent review seat (OMO: kimi-k2.7-code)
     - id: tool-subagent-councillor-beta
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -349,7 +372,7 @@
         toolName: subagent_councillor_beta
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.councillor_beta.provider@@
           model: @@models.councillor_beta@@
         persona: >-
           You are Councillor beta (seat name: beta), a member of a review
@@ -360,6 +383,7 @@
           seat answers independently. Output: your answer plus a confidence
           level (high/medium/low) and any assumptions you made.
 
+    # Councillor gamma — independent review seat (OMO: qwen3.7-max)
     - id: tool-subagent-councillor-gamma
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -367,7 +391,7 @@
         toolName: subagent_councillor_gamma
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.councillor_gamma.provider@@
           model: @@models.councillor_gamma@@
         persona: >-
           You are Councillor gamma (seat name: gamma), a member of a review
@@ -386,7 +410,7 @@
         toolName: subagent_council
         backgroundMode: one-shot
         agentOptions:
-          provider: opencode-go
+          provider: @@models.council.provider@@
           model: @@models.council@@
         persona: >-
           You are the Council agent — a synthesizer for multi-model consensus.

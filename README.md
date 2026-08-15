@@ -11,8 +11,9 @@ One agent preset, `orchestrator`:
 
 - **Main agent = Orchestrator** — a workflow manager persona (plan → dispatch →
   reconcile → verify), delegating instead of implementing.
-- **11 subagent tools**, each with its own persona and pinned model
-  (routed through the `opencode-go` pi-ai provider):
+- **11 subagent tools**, each with its own persona and a model slot in
+  `models.json` (`provider` defaults to `null`, i.e. inherit the main
+  agent's provider):
 
 | Tool | Role | Model |
 |---|---|---|
@@ -29,6 +30,12 @@ One agent preset, `orchestrator`:
 > The models above mirror the OMO `opencode` preset found in
 > `~/.config/opencode/oh-my-opencode-slim.json`. The OMO council model
 > `gpt-5.6-luna` is not in the opencode-go catalog, so `kimi-k3` is used.
+>
+> All model and provider names are examples from the OMO author's
+> environment. The bundled default sets `provider: null` (the subagent
+> inherits the main agent's provider); set `provider` in `models.json` to
+> pin one (e.g. `"opencode-go"`), and make sure each model name exists in
+> that provider's catalog.
 
 ## How it works
 
@@ -51,14 +58,14 @@ should not clobber your model choices:
 
 | File (in the bundle) | File (in `~/.dsh/.agent-presets/orchestrator/`) | What you edit |
 |---|---|---|
-| `config/models.json` | `models.json` | model mapping (copied on install; user-owned afterwards) |
+| `config/models.json` | `models.json` | model + provider mapping (copied on install; user-owned afterwards) |
 | `config/presets/orchestrator/agent.cordis.yml.tmpl` | `agent.cordis.yml` (rendered) | personas / tool wiring (generated from template) |
 | — | `.generated` | render stamp `{ renderedHash }` (managed) |
 
 Every boot the plugin re-renders `agent.cordis.yml` from the current template
 + the current `models.json`. Rules:
 
-- **Model change** → edit `models.json`, restart `dsh`. Re-render happens.
+- **Model / provider change** → edit `models.json` (`provider: null` = inherit the main agent's provider), restart `dsh`. Re-render happens.
 - **Plugin update (new personas/wiring)** → re-render happens on next boot;
   your `models.json` is never overwritten.
 - **Hand-editing the composition** → if you edit `agent.cordis.yml` directly,
@@ -106,14 +113,22 @@ agent will plan and dispatch; the subagent tools appear in its tool catalog.
 
 ## Customizing
 
-- **Change a subagent's model** → edit
+- **Change a subagent's model / provider** → edit
   `~/.dsh/.agent-presets/orchestrator/models.json`, restart `dsh` (or the
   `dsh-web` service). The plugin re-renders `agent.cordis.yml` on the next
   boot and your model mapping is never overwritten by plugin updates.
 
   ```json
-  { "oracle": "glm-5.2", "explorer": "deepseek-v4-flash", "...": "..." }
+  {
+    "oracle": { "provider": null, "model": "glm-5.2" },
+    "explorer": { "provider": "opencode-go", "model": "deepseek-v4-flash" }
+  }
   ```
+
+  `provider: null` (or omitted) = the subagent inherits the main agent's
+  provider. The legacy flat format `"oracle": "glm-5.2"` still works
+  (provider is treated as inherited). Model names must exist in the chosen
+  provider's catalog.
 
 - **Change personas / tool wiring** → edit the template in the bundle
   (`config/presets/orchestrator/agent.cordis.yml.tmpl`) and bump the plugin,
