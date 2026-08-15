@@ -1,0 +1,28 @@
+{
+  "name": "dsh-plugin-orchestrator",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness bundle: oh-my-opencode-slim style Orchestrator agent preset with model-pinned specialist subagents (explorer/oracle/librarian/designer/fixer/council).",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "config/presets/**"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "agent-preset",
+    "orchestrator",
+    "subagent"
+  ],
+  "license": "MIT"
+}

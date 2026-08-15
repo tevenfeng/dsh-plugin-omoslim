@@ -1,0 +1,2 @@
+name: Orchestrator
+description: 计划-分派型主 Agent：负责任务分解、子 Agent 调度与结果汇总（仿 oh-my-opencode-slim 的 Orchestrator 角色）。

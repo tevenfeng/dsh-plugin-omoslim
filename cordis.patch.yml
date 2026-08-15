@@ -1,0 +1,15 @@
+# dsh-plugin-orchestrator — bundle patch layer.
+#
+# This bundle contributes ONE row: the preset installer plugin. It copies the
+# bundled agent presets (config/presets/*) into the harness-home user preset
+# root (~/.dsh/.agent-presets) at boot, where the agent-presets roster picks
+# them up (discovery re-reads the roots on every list/resolve).
+#
+# Why an installer row instead of overriding `agent-presets` roots: the dsh
+# launcher's composeProfile forcibly overwrites `agent-presets.config.roots`
+# with the shipped root + (implicitly) the user root, so a bundle cannot add
+# its own root. The user root is always scanned, so installing there is the
+# supported extension path.
+- insert:
+    - id: orchestrator-preset-installer
+      name: dsh-plugin-orchestrator
