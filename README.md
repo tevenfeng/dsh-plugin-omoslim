@@ -1,4 +1,4 @@
-# dsh-plugin-orchestrator
+# dsh-plugin-omoslim
 
 DeepSeek Harness (`dsh`) bundle that installs an **Orchestrator agent preset**
 in the style of [oh-my-opencode-slim](https://github.com/alvinunreal/oh-my-opencode-slim):
@@ -47,7 +47,7 @@ root is the supported extension path.
 
 ```bash
 # from the profile directory (web is the default profile)
-dsh plugin --profile web add dsh-plugin-orchestrator
+dsh plugin --profile web add dsh-plugin-omoslim
 ```
 
 `dsh plugin` forwards to pnpm and reconciles `dsh.profile.bundles`, so the
@@ -63,7 +63,7 @@ For local development instead of a published package:
 
 ```bash
 # in ~/.dsh/profiles/web/
-pnpm add file:/home/<you>/Coding/dsh-plugin-orchestrator
+pnpm add file:/home/<you>/Coding/dsh-plugin-omoslim
 # then add the package name to the "dsh.profile.bundles" array in package.json
 ```
 
@@ -76,7 +76,7 @@ agent will plan and dispatch; the subagent tools appear in its tool catalog.
 
 ## Uninstall / rollback
 
-1. Remove the bundle: `dsh plugin --profile web remove dsh-plugin-orchestrator`
+1. Remove the bundle: `dsh plugin --profile web remove dsh-plugin-omoslim`
    (or drop the dependency + `dsh.profile.bundles` entry manually), restart.
 2. The preset files stay in `~/.dsh/.agent-presets/orchestrator/` — delete
    that directory to remove them, or keep it to keep using the preset without
@@ -106,7 +106,7 @@ To change a subagent's model, edit its `agentOptions` in that file, e.g.:
 ## Layout
 
 ```
-dsh-plugin-orchestrator/
+dsh-plugin-omoslim/
 ├── package.json            # dsh.bundle.patch declaration
 ├── cordis.patch.yml        # bundle patch layer (inserts the installer row)
 ├── lib/index.js            # Cordis plugin: idempotent preset installer

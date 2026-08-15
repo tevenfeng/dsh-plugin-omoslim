@@ -1,4 +1,4 @@
-# dsh-plugin-orchestrator — bundle patch layer.
+# dsh-plugin-omoslim — bundle patch layer.
 #
 # This bundle contributes ONE row: the preset installer plugin. It copies the
 # bundled agent presets (config/presets/*) into the harness-home user preset
@@ -12,4 +12,4 @@
 # supported extension path.
 - insert:
     - id: orchestrator-preset-installer
-      name: dsh-plugin-orchestrator
+      name: dsh-plugin-omoslim
