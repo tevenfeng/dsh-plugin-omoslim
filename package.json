@@ -8,7 +8,12 @@
     ".": "./lib/index.js"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "prepublishOnly": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tevenfeng/dsh-plugin-omoslim.git"
   },
   "files": [
     "lib/index.js",
