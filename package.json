@@ -1,11 +1,14 @@
 {
   "name": "dsh-plugin-omoslim",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "DeepSeek Harness bundle: oh-my-opencode-slim style Orchestrator agent preset with model-pinned specialist subagents (explorer/oracle/librarian/designer/fixer/council).",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js"
+  },
+  "bin": {
+    "omoslim": "./lib/cli.js"
   },
   "scripts": {
     "test": "node --test",
@@ -17,8 +20,9 @@
   },
   "files": [
     "lib/index.js",
+    "lib/cli.js",
     "cordis.patch.yml",
-    "config/models.json",
+    "config/models.d/**",
     "config/presets/**"
   ],
   "dsh": {

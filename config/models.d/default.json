@@ -1,0 +1,11 @@
+{
+  "explorer": { "provider": "opencode-go", "model": "deepseek-v4-flash" },
+  "oracle": { "provider": "opencode-go", "model": "glm-5.2" },
+  "librarian": { "provider": "opencode-go", "model": "minimax-m2.7" },
+  "designer": { "provider": "opencode-go", "model": "kimi-k2.6" },
+  "fixer": { "provider": "opencode-go", "model": "deepseek-v4-flash" },
+  "councillor_alpha": { "provider": "opencode-go", "model": "glm-5.2" },
+  "councillor_beta": { "provider": "opencode-go", "model": "kimi-k2.7-code" },
+  "councillor_gamma": { "provider": "opencode-go", "model": "qwen3.7-max" },
+  "council": { "provider": "opencode-go", "model": "kimi-k3" }
+}

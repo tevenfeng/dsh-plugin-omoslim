@@ -11,9 +11,9 @@ One agent preset, `orchestrator`:
 
 - **Main agent = Orchestrator** — a workflow manager persona (plan → dispatch →
   reconcile → verify), delegating instead of implementing.
-- **11 subagent tools**, each with its own persona and a model slot in
-  `models.json` (`provider` defaults to `null`, i.e. inherit the main
-  agent's provider):
+- **11 subagent tools**, each with its own persona and a model slot in a
+  named model profile under `models.d/` (`provider` defaults to `null`, i.e.
+  inherit the main agent's provider):
 
 | Tool | Role | Model |
 |---|---|---|
@@ -32,9 +32,9 @@ One agent preset, `orchestrator`:
 > `gpt-5.6-luna` is not in the opencode-go catalog, so `kimi-k3` is used.
 >
 > All model and provider names are examples from the OMO author's
-> environment. The bundled default sets `provider: null` (the subagent
-> inherits the main agent's provider); set `provider` in `models.json` to
-> pin one (e.g. `"opencode-go"`), and make sure each model name exists in
+> environment. The factory profiles seed `provider: null` (the subagent
+> inherits the main agent's provider); set `provider` in `models.d/<name>.json`
+> to pin one (e.g. `"opencode-go"`), and make sure each model name exists in
 > that provider's catalog.
 
 ## How it works
@@ -54,23 +54,34 @@ root is the supported extension path.
 
 Each subagent's **model** and **persona** live in different files on purpose —
 you are far more likely to tweak a model than a persona, and plugin updates
-should not clobber your model choices:
+should not clobber your model choices. On top of that, you can keep **many
+named model profiles** and switch the active one at any time:
 
 | File (in the bundle) | File (in `~/.dsh/.agent-presets/orchestrator/`) | What you edit |
 |---|---|---|
-| `config/models.json` | `models.json` | model + provider mapping (copied on install; user-owned afterwards) |
+| `config/models.d/*.json` | `models.d/*.json` | factory profiles (seeded on install; user-editable afterwards) |
+| — | `models.d/default.json` | the default profile (user-owned) |
 | `config/presets/orchestrator/agent.cordis.yml.tmpl` | `agent.cordis.yml` (rendered) | personas / tool wiring (generated from template) |
-| — | `.generated` | render stamp `{ renderedHash }` (managed) |
+| — | `.generated` | render stamp `{ active, sourceHash, renderedHash }` (managed) |
 
-Every boot the plugin re-renders `agent.cordis.yml` from the current template
-+ the current `models.json`. Rules:
+The **active** profile is stored in `~/.dsh/settings.yaml` under
+`omoslim.active` (defaults to `default`). Every boot the plugin re-renders
+`agent.cordis.yml` from the current template + the **active** profile. Rules:
 
-- **Model / provider change** → edit `models.json` (`provider: null` = inherit the main agent's provider), restart `dsh`. Re-render happens.
+- **Switch the active profile** → `omoslim switch <name>` re-renders in place;
+  the next session created picks up the new models (no process restart needed).
+- **Model / provider change** → edit `models.d/<name>.json`
+  (`provider: null` = inherit the main agent's provider), then switch to it.
 - **Plugin update (new personas/wiring)** → re-render happens on next boot;
-  your `models.json` is never overwritten.
+  your `models.d/*.json` profiles are never overwritten.
 - **Hand-editing the composition** → if you edit `agent.cordis.yml` directly,
   the plugin detects it (hash differs from the stamp) and leaves your file
   alone. You own it then; delete the preset directory to take plugin updates.
+
+> A profile must name **every** slot the template references (explorer, oracle,
+> librarian, designer, fixer, councillor_alpha, councillor_beta,
+> councillor_gamma, council). A missing slot fails closed rather than rendering
+> a half-populated composition.
 
 ## Install
 
@@ -111,12 +122,43 @@ agent will plan and dispatch; the subagent tools appear in its tool catalog.
    that directory to remove them, or keep it to keep using the preset without
    the plugin.
 
+## Multiple model profiles
+
+Each profile is one JSON file under
+`~/.dsh/.agent-presets/orchestrator/models.d/`, holding a slot → mapping table:
+
+```json
+{
+  "oracle": { "provider": null, "model": "glm-5.2" },
+  "explorer": { "provider": "opencode-go", "model": "deepseek-v4-flash" }
+}
+```
+
+- `provider: null` (or omitted) = inherit the main agent's provider.
+- The legacy flat format `"oracle": "glm-5.2"` still works.
+- Create a new profile by copying an existing file:
+  `cp models.d/default.json models.d/economy.json`, then edit it.
+
+Manage profiles with the CLI:
+
+```bash
+omoslim list                  # list profiles; the active one is marked *
+omoslim current               # print the active profile name
+omoslim switch economy        # switch + re-render now
+```
+
+`omoslim` is installed alongside the plugin (an npm `bin`). Switching writes
+`omoslim.active` to `~/.dsh/settings.yaml` and re-renders `agent.cordis.yml` in
+place — **create a new session** to use the new models; a running session keeps
+the models it was composed with, and the `dsh` process does not need to
+restart.
+
 ## Customizing
 
 - **Change a subagent's model / provider** → edit
-  `~/.dsh/.agent-presets/orchestrator/models.json`, restart `dsh` (or the
-  `dsh-web` service). The plugin re-renders `agent.cordis.yml` on the next
-  boot and your model mapping is never overwritten by plugin updates.
+  `~/.dsh/.agent-presets/orchestrator/models.d/<name>.json`, then
+  `omoslim switch <name>` (or let the next boot re-render it). Your profiles
+  are never overwritten by plugin updates.
 
   ```json
   {
@@ -143,12 +185,14 @@ agent will plan and dispatch; the subagent tools appear in its tool catalog.
 
 ```
 dsh-plugin-omoslim/
-├── package.json            # dsh.bundle.patch declaration
+├── package.json            # dsh.bundle.patch declaration + "omoslim" bin
 ├── cordis.patch.yml        # bundle patch layer (inserts the installer row)
 ├── config/
-│   ├── models.json         # DEFAULT model mapping (independent file)
+│   ├── models.d/            # factory model profiles (default.json, cheap.json, …)
 │   └── presets/orchestrator/
 │       ├── preset.yml
 │       └── agent.cordis.yml.tmpl   # composition template (@@models.<key>@@ slots)
-└── lib/index.js            # Cordis plugin: idempotent installer + template renderer
+└── lib/
+    ├── index.js            # Cordis plugin: installer + template renderer + profile helpers
+    └── cli.js              # omoslim CLI: list / switch / current
 ```

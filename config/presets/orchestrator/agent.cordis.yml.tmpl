@@ -2,10 +2,11 @@
 # (preset "opencode", oh-my-opencode-slim v2.2.8) on the dsh harness.
 #
 # Main agent = Orchestrator (planner/dispatcher). Specialists are exposed as
-# named subagent tools, each pinned to a model slot in models.json. Defaults
-# mirror the OMO opencode preset (all values are examples from the OMO
-# author's environment — edit ~/.dsh/.agent-presets/orchestrator/models.json
-# to suit your deployment):
+# named subagent tools, each pinned to a model slot in a named model profile
+# under models.d/. Defaults mirror the OMO opencode preset (all values are
+# examples from the OMO author's environment — edit
+# ~/.dsh/.agent-presets/orchestrator/models.d/<name>.json to suit your
+# deployment):
 #   explorer         -> deepseek-v4-flash   (fast codebase navigation)
 #   oracle           -> glm-5.2             (architecture / review)
 #   librarian        -> minimax-m2.7        (docs / research)
@@ -18,12 +19,9 @@
 #                                             gpt-5.6-luna, not in the
 #                                             opencode-go catalog)
 #
-# provider defaults to null = inherit the main agent's provider; set it in
-# models.json to pin one (e.g. "opencode-go").
-#
-# Edit models.json for model/provider changes, then pick this preset for new
-# sessions in Settings → General (or set `agent-presets.default: orchestrator`
-# in ~/.dsh/settings.yaml).
+# Edit models.d/<name>.json for model/provider changes,
+# then pick this preset for new sessions using `omoslim switch`(or set
+# `agent-presets.default: orchestrator` in ~/.dsh/settings.yaml).
 
 # ── identity ────────────────────────────────────────────────────────────────
 

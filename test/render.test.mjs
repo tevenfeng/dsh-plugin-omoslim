@@ -8,7 +8,7 @@ import { render, resolveSlot } from '../lib/index.js';
 const thisDir = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(thisDir, '..');
 const tmpl = readFileSync(resolve(repo, 'config/presets/orchestrator/agent.cordis.yml.tmpl'), 'utf8');
-const models = JSON.parse(readFileSync(resolve(repo, 'config/models.json'), 'utf8'));
+const models = JSON.parse(readFileSync(resolve(repo, 'config/models.d/default.json'), 'utf8'));
 
 test('nested slots: provider + model both render, indentation preserved', () => {
   const t = 'provider: @@models.explorer.provider@@\n        model: @@models.explorer.model@@';
@@ -68,7 +68,7 @@ test('integration: real template + real models render cleanly', () => {
   const out = render(tmpl, models);
   assert.ok(!out.includes('@@'), 'no leftover placeholders');
   assert.ok(out.includes('（deepseek-v4-flash）'), 'explorer route row rendered');
-  assert.ok(!out.includes('provider: opencode-go'), 'no hardcoded provider');
+  assert.ok(out.includes('provider: opencode-go'), 'provider rendered from models.d/default.json');
   assert.ok(out.includes('model: deepseek-v4-flash'), 'explorer agentOptions model rendered');
   assert.ok(out.includes('subagent_councillor_alpha（glm-5.2）'), 'councillor alpha route row');
   assert.ok(out.includes('subagent_council（kimi-k3）'), 'council route row');
