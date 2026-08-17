@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -209,6 +210,33 @@ test('renderPreset: seeds factory profiles (default + cheap) without overwriting
     renderPreset({}, PRESET_ID, srcDir, targetDir, 'default', true);
     const after = readFileSync(join(targetDir, 'models.d', 'default.json'), 'utf8');
     assert.equal(after, before, 'user-edited default.json preserved');
+  } finally {
+    restore();
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('CLI: omoslim list shows every slot provider/model and marks the active profile', () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'omoslim-'));
+  const restore = setHome(tmp);
+  try {
+    const srcDir = join(PRESET_SOURCE, PRESET_ID);
+    const targetDir = presetTargetDir(PRESET_ID);
+    // Two profiles with distinct models.
+    writeProfile(targetDir, 'default', 'MODEL-A');
+    writeProfile(targetDir, 'pro', 'MODEL-B');
+    // Make "pro" the active one.
+    writeSettingsActive('pro');
+
+    const cli = resolve(REPO, 'lib/cli.js');
+    const run = spawnSync(process.execPath, [cli, 'list'], { env: process.env, encoding: 'utf8' });
+    assert.equal(run.status, 0, run.stderr);
+    const out = run.stdout;
+    assert.ok(out.includes('default'), 'lists default');
+    assert.ok(out.includes('pro *'), 'marks active with *');
+    assert.ok(out.includes('explorer: MODEL-B'), 'shows slot model for active profile');
+    assert.ok(out.includes('council: MODEL-B'), 'shows last slot too');
+    assert.ok(out.includes('active profile: "pro"'), 'prints active profile');
   } finally {
     restore();
     rmSync(tmp, { recursive: true, force: true });
