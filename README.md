@@ -147,11 +147,43 @@ omoslim current               # print the active profile name
 omoslim switch economy        # switch + re-render now
 ```
 
-`omoslim` is installed alongside the plugin (an npm `bin`). Switching writes
-`omoslim.active` to `~/.dsh/settings.yaml` and re-renders `agent.cordis.yml` in
-place — **create a new session** to use the new models; a running session keeps
-the models it was composed with, and the `dsh` process does not need to
-restart.
+`omoslim` ships as an npm `bin` (declared in `package.json`). Installing the
+plugin also links it into the profile's `node_modules/.bin/`, but that
+directory is **not** added to your shell `$PATH` automatically — npm/pnpm bins
+never modify your shell config. Make `omoslim` callable from anywhere with one
+of these:
+
+**Option A — add the profile's bin dir to your PATH (one line, persistent):**
+
+```bash
+# zsh (default on macOS):
+echo 'export PATH="$HOME/.dsh/profiles/web/node_modules/.bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+# bash:
+# echo 'export PATH="$HOME/.dsh/profiles/web/node_modules/.bin:$PATH"' >> ~/.bashrc
+# source ~/.bashrc
+```
+
+**Option B — install the package globally (bin lands on your global PATH):**
+
+```bash
+npm install -g dsh-plugin-omoslim
+# then `omoslim` works everywhere; note the global copy is separate from the
+# profile's copy, so re-run this after upgrading the plugin.
+```
+
+**Option C — one-off, no PATH changes:**
+
+```bash
+~/.dsh/profiles/web/node_modules/.bin/omoslim list   # full path
+# or, from inside the profile directory:
+#   npx --no-install omoslim switch economy
+```
+
+`omoslim switch <name>` writes `omoslim.active` to `~/.dsh/settings.yaml` and
+re-renders `agent.cordis.yml` in place — **create a new session** to use the
+new models; a running session keeps the models it was composed with, and the
+`dsh` process does not need to restart.
 
 ## Customizing
 
