@@ -68,8 +68,10 @@ The **active** profile is stored in `~/.dsh/settings.yaml` under
 `omoslim.active` (defaults to `default`). Every boot the plugin re-renders
 `agent.cordis.yml` from the current template + the **active** profile. Rules:
 
-- **Switch the active profile** → `omoslim switch <name>` re-renders in place;
-  the next session created picks up the new models (no process restart needed).
+- **Switch the active profile** → `omoslim switch <name>` re-renders
+  `agent.cordis.yml` in place. dsh mounts each preset's composition once per
+  process, so **restart `dsh` (or the `dsh-web` service)** for the new models
+  to load, then create a new session.
 - **Model / provider change** → edit `models.d/<name>.json`
   (`provider: null` = inherit the main agent's provider), then switch to it.
 - **Plugin update (new personas/wiring)** → re-render happens on next boot;
@@ -209,9 +211,10 @@ npm install -g dsh-plugin-omoslim
 ```
 
 `omoslim switch <name>` writes `omoslim.active` to `~/.dsh/settings.yaml` and
-re-renders `agent.cordis.yml` in place — **create a new session** to use the
-new models; a running session keeps the models it was composed with, and the
-`dsh` process does not need to restart.
+re-renders `agent.cordis.yml` in place. Because dsh mounts a preset's
+composition once per process, the running process keeps the models it was
+composed with — **restart `dsh` (or the `dsh-web` service)**, then create a
+new session to use the new models.
 
 ## Customizing
 
