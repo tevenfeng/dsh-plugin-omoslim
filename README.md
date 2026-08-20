@@ -114,6 +114,34 @@ Settings → General (it becomes the default only if you set it, or if
 `~/.dsh/settings.yaml` has `agent-presets.default: orchestrator`). The main
 agent will plan and dispatch; the subagent tools appear in its tool catalog.
 
+### Subagent model inspector
+
+In the web UI, click the plugin's button to the **left of the model selector**
+(a stack/panel icon). It opens a panel showing the **active profile's**
+per-subagent provider/model at a glance:
+
+- Each row lists one subagent slot with its model, plus the provider when one
+  is pinned.
+- `provider: null` (shown as "inherits main agent") means that subagent uses
+  the main agent's provider.
+
+The button is shown **only while the current session runs the `orchestrator`
+preset** — under dsh's own presets or third-party presets these subagent slots
+don't exist, so the inspector hides instead of showing misleading data. It is
+also hidden on the **blank new-session screen** (a preset pick there is only
+staged, not applied, so the button appears once the orchestrator session
+actually starts running).
+
+The data is served read-only by
+`GET /dsh-plugin-omoslim/subagent-models` (JSON), so the panel reflects what
+the orchestrator preset is literally composed with. Switching the active
+profile (`omoslim switch <name>`) and opening the panel again shows the new
+mapping.
+
+> After **updating** the plugin, restart the web app so the new route and button
+> are picked up — `systemctl --user restart dsh-web`, or restart your `dsh web`
+> process — then refresh the page.
+
 ## Uninstall / rollback
 
 1. Remove the bundle: `dsh plugin --profile web remove dsh-plugin-omoslim`
